@@ -1,0 +1,54 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Pledges</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'donations:index' %}">
+      <i class="bi bi-arrow-left"></i> Donations
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'donations:pledge_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Add pledge
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Member</th>
+          <th>Type</th>
+          <th>Frequency</th>
+          <th>Amount</th>
+          <th>Start</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pledge in pledge_list %}
+        <tr>
+          <td><a href="{% url 'members:member_detail' pledge.member.pk %}">{{ pledge.member.full_name }}</a></td>
+          <td><span class="badge text-bg-light border">{{ pledge.donation_type.name }}</span></td>
+          <td>{{ pledge.get_frequency_display }}</td>
+          <td class="fw-semibold">{{ pledge.amount|intcomma }}</td>
+          <td>{{ pledge.start_date|date:"d M Y" }}</td>
+          <td>
+            {% if pledge.is_active %}
+            <span class="badge text-bg-success">Active</span>
+            {% else %}
+            <span class="badge text-bg-secondary">Inactive</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">No pledges yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

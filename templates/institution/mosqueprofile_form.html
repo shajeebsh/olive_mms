@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Institution setup — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h1 class="h5 mb-0">{% if object %}Edit{% else %}Set up{% endif %} your mosque profile</h1>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "includes/form_fields.html" %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">{% if object %}Save{% else %}Complete setup{% endif %}</button>
+            <a class="btn btn-outline-secondary" href="{% url 'core:index' %}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

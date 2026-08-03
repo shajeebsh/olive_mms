@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0">Dashboard</h1>
+  <span class="text-muted small">Welcome back, {{ user.get_short_name }}</span>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Members</div>
+        <div class="kpi-value">0</div>
+      </div>
+      <i class="bi bi-people kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Donations</div>
+        <div class="kpi-value">0</div>
+      </div>
+      <i class="bi bi-heart kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Fund Balance</div>
+        <div class="kpi-value">$0</div>
+      </div>
+      <i class="bi bi-cash-stack kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Madrassa</div>
+        <div class="kpi-value">0</div>
+      </div>
+      <i class="bi bi-mortarboard kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Getting started</div>
+  <div class="card-body">
+    <p class="mb-1">The foundation is in place. Up next (Phase 1):
+      <code>institution</code> mosque profile and <code>members</code> app.</p>
+    <a class="btn btn-primary btn-sm mt-2" href="{% url 'admin:index' %}">
+      Open Django Admin
+    </a>
+  </div>
+</div>
+{% endblock %}

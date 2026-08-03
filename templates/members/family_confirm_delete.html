@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ family.name }} — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Delete family</div>
+      <div class="card-body">
+        <p>Are you sure you want to delete <strong>{{ family.name }}</strong>?</p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a class="btn btn-outline-secondary" href="{% url 'members:family_list' %}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

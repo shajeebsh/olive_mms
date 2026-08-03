@@ -1,0 +1,78 @@
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Families</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'members:index' %}">
+      <i class="bi bi-arrow-left"></i> Members
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'members:family_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Add family
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form class="d-flex" method="get" role="search">
+      <input class="form-control form-control-sm me-2" type="search" name="q" value="{{ q }}"
+             placeholder="Search family or head...">
+      <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Family</th>
+          <th>Head</th>
+          <th>Members</th>
+          <th>Phone</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for family in family_list %}
+        <tr>
+          <td><a href="{% url 'members:family_detail' family.pk %}">{{ family.name }}</a></td>
+          <td>{{ family.head|default:"—" }}</td>
+          <td>{{ family.member_count }}</td>
+          <td>{{ family.phone|default:"—" }}</td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
+                    hx-get="{% url 'members:family_update' family.pk %}" hx-target="#genericModalBody"
+                    hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" hx-post="{% url 'members:family_delete' family.pk %}"
+                    hx-confirm="Delete {{ family.name }}?" hx-swap="none" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            No families yet. Add your first family from the <strong>Add family</strong> button above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>

@@ -1,0 +1,154 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Finance — Expenses</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'finance:index' %}">
+      <i class="bi bi-speedometer2"></i> Overview
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'finance:expense_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Record expense
+    </button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Filtered total</div>
+        <div class="kpi-value">{{ expense_total|intcomma }}</div>
+      </div>
+      <i class="bi bi-arrow-up-circle kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Pending approval</div>
+        <div class="kpi-value">{{ pending_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-hourglass-split kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Approved</div>
+        <div class="kpi-value">{{ approved_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-check2-circle kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form class="row g-2 align-items-end" method="get" role="search">
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">Fund</label>
+        <select class="form-select form-select-sm" name="fund">
+          <option value="">All funds</option>
+          {% for fund in funds %}
+          <option value="{{ fund.pk }}" {% if selected_fund == fund.pk|stringformat:"s" %}selected{% endif %}>{{ fund.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">Status</label>
+        <select class="form-select form-select-sm" name="status">
+          <option value="">All statuses</option>
+          {% for value, label in view.model.Status.choices %}
+          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">From</label>
+        <input type="date" class="form-control form-control-sm" name="date_from" value="{{ date_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">To</label>
+        <input type="date" class="form-control form-control-sm" name="date_to" value="{{ date_to }}">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary btn-sm w-100" type="submit">
+          <i class="bi bi-funnel"></i> Filter
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Fund</th>
+          <th>Payee</th>
+          <th>Status</th>
+          <th class="text-end">Amount</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for expense in expense_list %}
+        <tr>
+          <td>{{ expense.date|date:"d M Y" }}</td>
+          <td>{{ expense.description|default:"—" }}</td>
+          <td><span class="badge text-bg-light border">{{ expense.category|default:"General" }}</span></td>
+          <td>{{ expense.fund.name }}</td>
+          <td>{{ expense.payee|default:"—" }}</td>
+          <td>
+            {% if expense.status == "APPROVED" %}
+            <span class="badge text-bg-success">Approved</span>
+            {% elif expense.status == "REJECTED" %}
+            <span class="badge text-bg-danger">Rejected</span>
+            {% else %}
+            <span class="badge text-bg-warning">Pending</span>
+            {% endif %}
+          </td>
+          <td class="text-end fw-semibold">{{ expense.amount|intcomma }}</td>
+          <td class="text-end text-nowrap">
+            {% if expense.status == "PENDING" %}
+            <button class="btn btn-sm btn-outline-success" type="button" title="Approve"
+                    hx-post="{% url 'finance:expense_approve' expense.pk %}" hx-swap="none">
+              <i class="bi bi-check2"></i>
+            </button>
+            {% endif %}
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
+                    hx-get="{% url 'finance:expense_update' expense.pk %}" hx-target="#genericModalBody"
+                    hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">
+            No expenses match. Record one with the <strong>Record expense</strong> button above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>

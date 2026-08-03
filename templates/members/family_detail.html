@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ family.name }} — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">{{ family.name }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'members:family_update' family.pk %}">
+      <i class="bi bi-pencil"></i> Edit
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'members:family_list' %}">Back to list</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">Family</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Head</dt>
+          <dd class="col-sm-8">{{ family.head|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted">Address</dt>
+          <dd class="col-sm-8">{{ family.address|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted">Phone</dt>
+          <dd class="col-sm-8">{{ family.phone|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted">Email</dt>
+          <dd class="col-sm-8">{{ family.email|default:"—" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">Members</div>
+      <ul class="list-group list-group-flush">
+        {% for member in family.members.all %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'members:member_detail' member.pk %}">{{ member.full_name }}</a>
+          <span class="badge text-bg-light border">{{ member.get_member_role_display }}</span>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">No members linked.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

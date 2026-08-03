@@ -1,0 +1,33 @@
+{% load humanize %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0">Institution</h1>
+  <button class="btn btn-outline-secondary btn-sm" type="button"
+          hx-get="{% url 'institution:edit' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+          data-bs-toggle="modal" data-bs-target="#genericModal">
+    <i class="bi bi-pencil"></i> Edit profile
+  </button>
+</div>
+
+<div class="card">
+  <div class="card-header">Mosque profile</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="fw-semibold">{{ profile.name }}</div>
+        {% if profile.tagline %}<div class="text-muted">{{ profile.tagline }}</div>{% endif %}
+      </div>
+      <div class="col-md-4">
+        <div class="text-muted small">Contact</div>
+        <div>{% if profile.address %}{{ profile.address }}{% endif %}{% if profile.city %} · {{ profile.city }}{% endif %}</div>
+        <div>{% if profile.phone %}<i class="bi bi-telephone"></i> {{ profile.phone }}{% endif %}
+             {% if profile.email %} · {{ profile.email }}{% endif %}</div>
+      </div>
+      <div class="col-md-4">
+        <div class="text-muted small">Bank details</div>
+        <div>{% if profile.bank_name %}{{ profile.bank_name }} — {{ profile.bank_account }}{% else %}<em>Not set</em>{% endif %}</div>
+        {% if profile.bank_iban %}<div>IBAN: {{ profile.bank_iban }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>

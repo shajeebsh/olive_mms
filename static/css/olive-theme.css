@@ -1,0 +1,196 @@
+/* Olive MMS theme — navy #003566 nav, teal #008080 primary, Inter font */
+
+:root {
+  --mm-navy: #003566;
+  --mm-navy-dark: #00264a;
+  --mm-teal: #008080;
+  --mm-teal-dark: #006666;
+  --mm-bg: #f4f6f8;
+  --mm-card-border: #e3e8ee;
+  --mm-text: #1c2b3a;
+  --mm-muted: #64748b;
+  --mm-radius: 12px;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: var(--mm-text);
+  background-color: var(--mm-bg);
+}
+
+/* ---------- Two-row header shell ---------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: linear-gradient(135deg, var(--mm-navy), var(--mm-navy-dark));
+  box-shadow: 0 2px 8px rgba(0, 30, 60, 0.18);
+}
+
+.topbar {
+  height: 56px;
+  color: #fff;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--mm-teal);
+  color: #fff;
+  font-size: 1.05rem;
+  margin-right: 0.55rem;
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.topbar-search {
+  position: relative;
+  max-width: 320px;
+  flex: 1;
+}
+
+.topbar-search > i {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mm-muted);
+  font-size: 0.85rem;
+}
+
+.topbar-search input {
+  padding-left: 1.9rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.topbar-search input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.user-chip {
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 160px;
+}
+
+/* ---------- Module ribbon ---------- */
+.modulebar {
+  background: rgba(0, 0, 0, 0.18);
+  min-height: 44px;
+}
+
+.modulebar .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 3px solid transparent;
+}
+
+.modulebar .nav-link:hover {
+  color: #fff;
+}
+
+.modulebar .nav-link.active {
+  color: #fff;
+  border-bottom-color: var(--mm-teal);
+}
+
+.modulebar .nav-link i {
+  margin-right: 0.35rem;
+}
+
+/* ---------- Layout & cards ---------- */
+.app-main {
+  max-width: 1440px;
+}
+
+.app-footer {
+  color: var(--mm-muted);
+  font-size: 0.85rem;
+}
+
+.kpi-card {
+  background: #fff;
+  border: 1px solid var(--mm-card-border);
+  border-radius: var(--mm-radius);
+  padding: 1.1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(15, 40, 70, 0.06);
+}
+
+.kpi-card .kpi-label {
+  color: var(--mm-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-card .kpi-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--mm-navy);
+  margin: 0.2rem 0 0;
+}
+
+.kpi-card .kpi-icon {
+  font-size: 1.6rem;
+  color: var(--mm-teal);
+}
+
+.card {
+  border-color: var(--mm-card-border);
+  border-radius: var(--mm-radius);
+  box-shadow: 0 1px 3px rgba(15, 40, 70, 0.06);
+}
+
+.card-header {
+  background: #fff;
+  border-bottom-color: var(--mm-card-border);
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--mm-teal);
+  border-color: var(--mm-teal);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--mm-teal-dark);
+  border-color: var(--mm-teal-dark);
+}
+
+a {
+  color: var(--mm-teal-dark);
+}
+
+/* ---------- Login ---------- */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--mm-navy), var(--mm-navy-dark));
+  padding: 1rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: var(--mm-radius);
+  padding: 2rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}

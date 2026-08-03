@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ member.full_name }} — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">{{ member.full_name }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'members:member_update' member.pk %}">
+      <i class="bi bi-pencil"></i> Edit
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'members:index' %}">Back to list</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">Profile</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted">Family</dt>
+          <dd class="col-sm-8">
+            {% if member.family %}<a href="{% url 'members:family_detail' member.family.pk %}">{{ member.family.name }}</a>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </dd>
+          <dt class="col-sm-4 text-muted">Role</dt>
+          <dd class="col-sm-8">{{ member.get_member_role_display }}</dd>
+          <dt class="col-sm-4 text-muted">Status</dt>
+          <dd class="col-sm-8">{{ member.get_membership_status_display }}</dd>
+          <dt class="col-sm-4 text-muted">Phone</dt>
+          <dd class="col-sm-8">
+            {{ member.phone }}
+            <a class="btn btn-sm btn-outline-success ms-1" href="{{ member.whatsapp_url }}" target="_blank"
+               rel="noopener" title="Message on WhatsApp">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+          </dd>
+          <dt class="col-sm-4 text-muted">Email</dt>
+          <dd class="col-sm-8">{{ member.email|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted">Date of birth</dt>
+          <dd class="col-sm-8">{{ member.date_of_birth|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted">Join date</dt>
+          <dd class="col-sm-8">{{ member.join_date|default:"—" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Notes</div>
+      <div class="card-body">
+        {% if member.notes %}<p class="mb-0">{{ member.notes|linebreaksbr }}</p>
+        {% else %}<p class="text-muted mb-0">No notes.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

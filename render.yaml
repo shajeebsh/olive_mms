@@ -1,0 +1,38 @@
+# Render Blueprint for Olive MMS
+# Deploy on Render.com: https://render.com/docs/blueprint-spec
+# Lightweight stack: no Redis/Celery — just PostgreSQL + Django web service.
+
+services:
+  # PostgreSQL Database
+  - type: postgres
+    name: olive-mms-db
+    plan: free
+    postgresMajorVersion: "15"
+    # Environment variables will be auto-generated:
+    # DATABASE_URL=postgresql://...
+
+  # Web Service - Django Application
+  - type: web
+    name: olive-mms-web
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: ./run.sh
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: DJANGO_SETTINGS_MODULE
+        value: "config.settings.prod"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: "olive-mms-web.onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: olive-mms-db
+          property: connectionString
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: ""
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: ""

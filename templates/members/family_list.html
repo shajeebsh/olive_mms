@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Families — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="family-list-root"
+     hx-get="{% url 'members:family_list' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "members/partials/family_list_content.html" %}
+</div>
+{% endblock %}

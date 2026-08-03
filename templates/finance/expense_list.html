@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="expense-list-root"
+     hx-get="{% url 'finance:expenses' %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "finance/partials/expense_list_content.html" %}
+</div>
+{% endblock %}

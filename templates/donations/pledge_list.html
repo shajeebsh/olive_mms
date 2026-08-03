@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Pledges — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="pledge-list-root"
+     hx-get="{% url 'donations:pledges' %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "donations/partials/pledge_list_content.html" %}
+</div>
+{% endblock %}

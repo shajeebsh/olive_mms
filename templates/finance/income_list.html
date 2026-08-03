@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Income — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="income-list-root"
+     hx-get="{% url 'finance:income' %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "finance/partials/income_list_content.html" %}
+</div>
+{% endblock %}
