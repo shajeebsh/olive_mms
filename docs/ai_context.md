@@ -1,6 +1,6 @@
 # docs/ai_context.md — Olive MMS (Mosque & Madrassa Management System)
 
-> **Status**: GREEN — Phases 0–4 complete; Phase 5 (Events & Inventory) next.
+> **Status**: GREEN — Phases 0–6 complete (Phase 7 deployment optional, on demand).
 > **Last updated**: August 2026
 > **Source of truth for plan**: `docs/plan.md`
 
@@ -173,10 +173,63 @@ business pages, fund-based accounting only (initially).
   - Exit criteria met via test client: enroll student → take attendance (set + mark-all) → record
     fee → income auto-posted on EDU fund; edge cases (blank capacity, amount default) fixed.
 
-### 🔄 In Progress
-- **This session (Prompt 5 — Phase 4 Madrassa)**: done — see below.
+- **Phase 5 — Events & Inventory (complete)**:
+  - `events` app: `Event` (event_type PRAYER/IFTAR/EID/MADRASSA/FUNDRAISER/OTHER, status
+    PLANNED/ONGOING/COMPLETED/CANCELLED, date_from/date_to with validation, budget, location),
+    `EventAttendance` (role ORGANIZER/VOLUNTEER/GUEST, `unique_event_member` constraint —
+    duplicate registration rejected with a visible non-field error). Event list with filters +
+    KPI cards; event detail with attendee register/remove; volunteers list filterable by event.
+  - `inventory` app: `Category`, `Item` (unit, price, low_stock_threshold, `quantity`/`is_low_stock`/
+    `stock_value` properties via OneToOne `stock_level`), `StockLevel`, `StockMovement`
+    (movement_type IN/OUT, optional event FK → `events.Event` and recipient FK → `members.Member`
+    with `recipient_name` fallback for non-member distributions).
+  - `inventory/signals.py`: post_save/post_delete recompute `StockLevel` from all movements
+    (IN − OUT) via aggregate — levels stay consistent through create/edit/delete.
+  - Distribution workflow = movement OUT: `DistributionForm` (forces OUT, requires recipient or
+    recipient name, rejects quantity over available stock); `DistributionListView` + modal create.
+    Item/movement/category lists with filters (q, category, low-stock only, type, date range) +
+    KPI totals; insufficient-stock and no-recipient errors render via a new non-field error block
+    added to `templates/includes/form_fields.html` (shared).
+  - Registered both apps in `INSTALLED_APPS` + URLs (flat `/events/`, `/inventory/` paths,
+    matching madrassa/finance convention); migrations `events/0001`, `inventory/0001`; nav entries
+    auto-resolve via the existing module registry.
+  - Fixes while there: partials are now flat (no stray `{% endblock %}` — that broke rendering),
+    `ItemListView` sets `context_object_name="item_list"` so the low-stock filter (list-based
+    queryset) still populates the table, movement form initial prefills item from `?item=`.
+  - Tests: `events/tests.py` (constraints, volunteer/attendee counts, login-gated list) +
+    `inventory/tests.py` (stock sync on in/out/delete, low-stock flag, stock value, recipient /
+    insufficient-stock validation, distribution forces OUT) — 14 tests green, full suite 21 green.
+  - Exit criteria met via test client: create event → register attendee → create item → stock IN
+    (level 100) → distribution OUT to member (level 70) → all pages + HTMX partials render 200.
 
-### ⏭️ Next (Phase 5 — Events & Inventory)
+- **Phase 6 — Reporting & Polish (complete)**:
+  - `reporting` app (registered in INSTALLED_APPS + URLs at `/reporting/`; nav entry already in
+    registry): `ReportingDashboardView` (cross-module KPI cards — members, year donations,
+    total balance, students, upcoming events, low stock, month income/expense — plus a
+    donation-by-type doughnut and 6-month income-vs-expense bar chart via Chart.js, and recent
+    donations/payments/expenses/distributions lists).
+  - `AnnualZakatReportView` (year filter; grand/zakat totals + zakat share %, by-type table with
+    Zakat badge, monthly bar chart) and `FeeCollectionReportView` (year + class filters;
+    collected total, payment count, class collection rate; per-class expected-vs-collected table
+    with rate badges, top payers, monthly chart).
+  - CSV exports: `BaseCSVExportView` + `csv_response` helper; export views for members (honors
+    `q`), donations (honors type/method/date-range), income (fund/date), expenses
+    (fund/status/date), transfers, students (`q`), fee payments, events, items, movements
+    (type/item), plus annual-zakat and fee-collection report exports (honor year/class filters).
+    "Export" buttons wired into every module list partial header.
+  - Fixes while there: used `objects.dates("date", "year")` (not `datetimes`) for year dropdowns
+    (date columns are `DateField`); `overall_rate` + `has_payments` computed in the fee report.
+  - Polish: `base.html` skip link (`#main-content`), `:focus-visible` outline, responsive KPI
+    tweaks for small screens in `olive-theme.css`, chart canvases get `role="img"` + `aria-label`.
+  - `seed_demo` command (`core/management/commands/seed_demo.py`): idempotent-ish demo data across
+    all modules (reuses `seed_defaults`, families, members with roles, classes/enrollments/fees/
+    payments, donations + pledge, expenses + transfer, events + attendance, inventory in/out) —
+    stock/donation/fee signals post income automatically.
+  - Tests: `reporting/tests.py` — login-gating, dashboard KPIs, zakat totals, fee collection
+    totals, all 12 CSV exports (content-type + 200), donation export honors filters. Full suite
+    now **27 tests green**; `manage.py check` clean; `collectstatic` refreshed.
+  - Exit criteria met via test client: all 3 report pages + 12 exports render 200 with seeded
+    data; every module list page 200 after `seed_demo`.
 
 ---
 

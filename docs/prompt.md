@@ -8,6 +8,50 @@
 
 ## Current Prompt (August 2026)
 
+**Task:** Phase 6 (Reporting & Polish) — consolidated reporting + CSV exports + polish.
+
+**Steps:**
+
+1. **`reporting` app** (registered in `INSTALLED_APPS` + URLs at `/reporting/`; nav entry already
+   in the module registry):
+   - `ReportingDashboardView` (`reporting:index`): cross-module KPI cards (members, year
+     donations, total balance, students, upcoming events, low stock, month income/expense),
+     donation-by-type doughnut + 6-month income-vs-expense bar chart (Chart.js, `json_script`
+     data), recent donations / fee payments / expenses / distributions lists with empty states.
+   - `AnnualZakatReportView` (year filter; grand/zakat totals + share %, by-type table with Zakat
+     badge, monthly bar chart) and `FeeCollectionReportView` (year + class filters; collected
+     total, class collection rate, per-class expected-vs-collected table with rate badges, top
+     payers, monthly chart).
+   - CSV exports: `BaseCSVExportView` + `csv_response` helper; export views for members (honors
+     `q`), donations (type/method/date range), income (fund/date), expenses (fund/status/date),
+     transfers, students (`q`), fee payments, events, items, movements (type/item), and the
+     annual-zakat + fee-collection reports (honor year/class). "Export" buttons added to every
+     module list partial header.
+   - Gotchas fixed: use `objects.dates("date", "year")` (date columns are `DateField`, not
+     `DateTimeField` — `datetimes()` raises); compute `overall_rate` + `has_payments` in the fee
+     report.
+2. **Polish**: `base.html` skip link (`#main-content`) + `id` on `<main>`, `:focus-visible`
+   outline, responsive KPI/header tweaks for small screens in `olive-theme.css`, chart canvases
+   get `role="img"` + `aria-label`.
+3. **`seed_demo` command** (`core/management/commands/seed_demo.py`): idempotent-ish demo data
+   across all modules (reuses `seed_defaults`; families, members with roles, classes/enrollments/
+   fees/payments, donations + pledge, expenses + transfer, events + attendance, inventory in/out).
+   Prefer `.filter(...).first()` over `.get()` (dev DB has pre-existing records).
+4. **Tests**: `reporting/tests.py` in Django test style (repo has no pytest) — login-gating,
+   dashboard KPIs, zakat + fee totals, all 12 CSV exports (content-type + 200), donation export
+   honors filters.
+5. **Docs** — tick Phase 6 in `docs/plan.md`, re-label stale "Current Prompt" headers into
+   History, add this prompt, keep `docs/ai_context.md` current.
+
+**Exit criteria:** all 3 report pages + 12 CSV exports 200; `seed_demo` populates all modules;
+`manage.py check` + `manage.py test` (27 tests) green; Phase 6 checklist ticked. — *Complete:
+Phase 6 done and verified via test client (reports + exports 200 with seeded data, all module
+list pages 200); 6 new reporting tests green (suite 27); docs updated; collected static.*
+
+---
+
+### Prompt 2 (August 2026) — Render/Docker deployment config + Phase 1 (Institution & Members)
+
 **Task:** Add Render/Docker deployment config and continue Phase 1 implementation.
 
 **Steps:**
@@ -81,6 +125,43 @@ delete also removes auto-posted income).*
 
 ---
 
+### Prompt 6 (August 2026) — Phase 5 (Events & Inventory)
+
+**Task:** Continue to the next phase — Phase 5 (Events & Inventory) implementation.
+
+**Steps:**
+
+1. **Update `docs/ai_context.md`** at start and end of the session (completed / in progress /
+   next).
+2. **Phase 5 — Events & Inventory** per `docs/plan.md`:
+   - `events` app: `Event` (event_type/status choices, date range validation), `EventAttendance`
+     (role choices, `unique_event_member` constraint), event list with filters + KPIs, event
+     detail with attendee register/remove, volunteers list. Same conventions as prior apps.
+   - `inventory` app: `Category`, `Item` (unit, price, `low_stock_threshold`,
+     `quantity`/`is_low_stock`/`stock_value` properties), `StockLevel` (OneToOne),
+     `StockMovement` (IN/OUT, optional event FK + recipient FK/name). `inventory/signals.py`
+     recomputes `StockLevel` on movement post_save/post_delete.
+   - Distribution workflow = movement OUT: `DistributionForm` forces OUT, requires a recipient
+     (member or name), rejects quantity above available stock; `DistributionListView` + modal
+     create. Item/movement/category lists with filters + KPI totals.
+   - Register both apps in `INSTALLED_APPS` + URLs; run migrations; `events/tests.py` +
+     `inventory/tests.py` (constraints, stock sync, validation).
+   - Fixes while there: partials kept flat (no stray `{% endblock %}` — that broke rendering),
+     `ItemListView` needs `context_object_name="item_list"` because the low-stock filter returns a
+     plain list (Django then stops setting the default context name), movement form prefills item
+     from `?item=`, and `templates/includes/form_fields.html` gained a non-field errors block so
+     validation errors (duplicate attendance, insufficient stock) are visible.
+3. **Docs** — tick Phase 5 in `docs/plan.md`, log this prompt, keep `docs/ai_context.md` current.
+
+**Exit criteria:** create event, register attendance, stock items in/out with history;
+insufficient-stock and duplicate-attendance rejected with visible errors; `manage.py check` +
+`manage.py test` green; Phase 5 checklist ticked. — *Complete: Phase 5 done and verified via test
+client (event + attendee modal create 204, stock IN → level 100, distribution OUT to member →
+level 70, all pages + HTMX partials 200, low-stock filter, oversell + dup attendance rejected with
+visible errors); 14 new unit tests green (suite 21).*
+
+---
+
 ### Prompt 4 (August 2026) — Money rounding fix + Phase 3 (Finance)
 
 **Task:** Fix total balance showing `5,000.03000000000` (round to 2 decimal places) and continue
@@ -116,7 +197,7 @@ transfer moves balances, same-fund blocked); test data cleaned up.*
 
 ---
 
-## Current Prompt (August 2026)
+### Prompt 5 (August 2026) — Phase 4 (Madrassa)
 
 **Task:** Continue to the next phase — Phase 4 (Madrassa) implementation.
 

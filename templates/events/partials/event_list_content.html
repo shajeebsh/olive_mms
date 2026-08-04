@@ -1,19 +1,19 @@
 {% load humanize %}
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
-  <h1 class="h3 mb-0">Madrassa — Students</h1>
+  <h1 class="h3 mb-0">Events</h1>
   <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:index' %}">
-      <i class="bi bi-speedometer2"></i> Overview
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'events:volunteers' %}">
+      <i class="bi bi-people"></i> Volunteers
     </a>
     <a class="btn btn-outline-secondary btn-sm"
-       href="{% url 'reporting:export_students' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value|urlencode }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+       href="{% url 'reporting:export_events' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value|urlencode }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
       <i class="bi bi-download"></i> Export
     </a>
     <button class="btn btn-primary btn-sm" type="button"
-            hx-get="{% url 'madrassa:student_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            hx-get="{% url 'events:event_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
             data-bs-toggle="modal" data-bs-target="#genericModal">
-      <i class="bi bi-plus-lg"></i> Add student
+      <i class="bi bi-plus-lg"></i> Add event
     </button>
   </div>
 </div>
@@ -22,17 +22,26 @@
   <div class="col-6 col-md-3">
     <div class="kpi-card d-flex justify-content-between align-items-center">
       <div>
-        <div class="kpi-label">Total students</div>
-        <div class="kpi-value">{{ total_students|intcomma }}</div>
+        <div class="kpi-label">Events</div>
+        <div class="kpi-value">{{ total_events|intcomma }}</div>
       </div>
-      <i class="bi bi-mortarboard kpi-icon"></i>
+      <i class="bi bi-calendar-event kpi-icon"></i>
     </div>
   </div>
   <div class="col-6 col-md-3">
     <div class="kpi-card d-flex justify-content-between align-items-center">
       <div>
-        <div class="kpi-label">Active</div>
-        <div class="kpi-value">{{ active_students|intcomma }}</div>
+        <div class="kpi-label">Upcoming</div>
+        <div class="kpi-value text-success">{{ upcoming_events|intcomma }}</div>
+      </div>
+      <i class="bi bi-calendar-check kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Attendees registered</div>
+        <div class="kpi-value">{{ total_attendees|intcomma }}</div>
       </div>
       <i class="bi bi-person-check kpi-icon"></i>
     </div>
@@ -40,19 +49,10 @@
   <div class="col-6 col-md-3">
     <div class="kpi-card d-flex justify-content-between align-items-center">
       <div>
-        <div class="kpi-label">Graduated</div>
-        <div class="kpi-value">{{ graduated_students|intcomma }}</div>
+        <div class="kpi-label">Volunteers</div>
+        <div class="kpi-value">{{ volunteer_count|intcomma }}</div>
       </div>
-      <i class="bi bi-award kpi-icon"></i>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="kpi-card d-flex justify-content-between align-items-center">
-      <div>
-        <div class="kpi-label">Active enrollments</div>
-        <div class="kpi-value">{{ active_enrollments|intcomma }}</div>
-      </div>
-      <i class="bi bi-person-plus kpi-icon"></i>
+      <i class="bi bi-heart-pulse kpi-icon"></i>
     </div>
   </div>
 </div>
@@ -62,9 +62,19 @@
     <form class="row g-2 align-items-end" method="get" role="search">
       <div class="col-md-3">
         <input class="form-control form-control-sm" type="search" name="q" value="{{ q }}"
-               placeholder="Search name, guardian, family...">
+               placeholder="Search name, location...">
       </div>
       <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">Type</label>
+        <select class="form-select form-select-sm" name="event_type">
+          <option value="">All types</option>
+          {% for value, label in view.model.EventType.choices %}
+          <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">Status</label>
         <select class="form-select form-select-sm" name="status">
           <option value="">All statuses</option>
           {% for value, label in view.model.Status.choices %}
@@ -83,45 +93,46 @@
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <th>Name</th>
-          <th>Guardian</th>
-          <th>Admitted</th>
+          <th>Event</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Location</th>
           <th>Status</th>
+          <th class="text-end">Attendees</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for student in student_list %}
+        {% for event in event_list %}
         <tr>
-          <td><a href="{% url 'madrassa:student_detail' student.pk %}">{{ student.full_name }}</a></td>
+          <td><a href="{% url 'events:event_detail' event.pk %}">{{ event.name }}</a></td>
+          <td>{{ event.date_from|date:"d M Y" }}{% if event.date_to and event.date_to != event.date_from %} – {{ event.date_to|date:"d M Y" }}{% endif %}</td>
+          <td><span class="badge text-bg-light border">{{ event.get_event_type_display }}</span></td>
+          <td>{{ event.location|default:"—" }}</td>
           <td>
-            {{ student.guardian|default:"—" }}
-            {% if student.guardian_phone %}
-            <span class="text-muted small">({{ student.guardian_phone }})</span>
-            {% endif %}
-          </td>
-          <td>{{ student.admission_date|date:"d M Y" }}</td>
-          <td>
-            <span class="badge {% if student.status == 'ACTIVE' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
-              {{ student.get_status_display }}
+            <span class="badge {% if event.status == 'COMPLETED' %}text-bg-success{% elif event.status == 'CANCELLED' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+              {{ event.get_status_display }}
             </span>
           </td>
+          <td class="text-end">{{ event.attendee_count }}</td>
           <td class="text-end text-nowrap">
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'events:event_detail' event.pk %}"
+               title="Attendance"><i class="bi bi-clipboard-check"></i></a>
             <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
-                    hx-get="{% url 'madrassa:student_update' student.pk %}" hx-target="#genericModalBody"
+                    hx-get="{% url 'events:event_update' event.pk %}" hx-target="#genericModalBody"
                     hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
               <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-sm btn-outline-danger" hx-post="{% url 'madrassa:student_delete' student.pk %}"
-                    hx-confirm="Delete {{ student.full_name }}?" hx-swap="none" title="Delete">
+            <button class="btn btn-sm btn-outline-danger" hx-post="{% url 'events:event_delete' event.pk %}"
+                    hx-confirm="Delete {{ event.name }}?" hx-swap="none" title="Delete">
               <i class="bi bi-trash"></i>
             </button>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="5" class="text-center text-muted py-4">
-            No students found. Add your first student with the <strong>Add student</strong> button above.
+          <td colspan="7" class="text-center text-muted py-4">
+            No events found. Add one with the <strong>Add event</strong> button above.
           </td>
         </tr>
         {% endfor %}

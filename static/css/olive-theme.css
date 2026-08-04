@@ -18,6 +18,53 @@ body {
   background-color: var(--mm-bg);
 }
 
+/* ---------- Accessibility ---------- */
+:focus-visible {
+  outline: 3px solid var(--mm-teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 2000;
+  background: #fff;
+  color: var(--mm-navy);
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 8px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 575.98px) {
+  .kpi-card {
+    padding: 0.9rem 1rem;
+  }
+
+  .kpi-card .kpi-value {
+    font-size: 1.35rem;
+  }
+
+  .kpi-card .kpi-icon {
+    font-size: 1.3rem;
+  }
+
+  .modulebar .nav-link {
+    padding: 0.7rem 0.6rem;
+  }
+
+  .app-main {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
 /* ---------- Two-row header shell ---------- */
 .app-header {
   position: sticky;

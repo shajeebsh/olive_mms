@@ -27,6 +27,9 @@ INSTALLED_APPS = [
     "donations",
     "finance",
     "madrassa",
+    "events",
+    "inventory",
+    "reporting",
 ]
 
 MIDDLEWARE = [

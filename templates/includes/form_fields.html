@@ -1,3 +1,6 @@
+{% for error in form.non_field_errors %}
+<div class="text-danger small mb-3">{{ error }}</div>
+{% endfor %}
 {% for field in form %}
 <div class="mb-3">
   <label for="{{ field.id_for_label }}" class="form-label small fw-semibold">

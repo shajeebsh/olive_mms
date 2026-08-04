@@ -6,6 +6,10 @@
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'finance:index' %}">
       <i class="bi bi-speedometer2"></i> Overview
     </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{% url 'reporting:export_transfers' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value|urlencode }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+      <i class="bi bi-download"></i> Export
+    </a>
     <button class="btn btn-primary btn-sm" type="button"
             hx-get="{% url 'finance:transfer_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
             data-bs-toggle="modal" data-bs-target="#genericModal">

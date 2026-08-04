@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Volunteers — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="volunteer-list-root"
+     hx-get="{% url 'events:volunteers' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "events/partials/volunteer_list_content.html" %}
+</div>
+{% endblock %}

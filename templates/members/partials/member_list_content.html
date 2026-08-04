@@ -6,6 +6,9 @@
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'members:family_list' %}">
       <i class="bi bi-people"></i> Families
     </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'reporting:export_members' %}{% if q %}?q={{ q|urlencode }}{% endif %}">
+      <i class="bi bi-download"></i> Export
+    </a>
     <button class="btn btn-primary btn-sm" type="button"
             hx-get="{% url 'members:member_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
             data-bs-toggle="modal" data-bs-target="#genericModal">

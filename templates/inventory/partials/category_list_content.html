@@ -1,0 +1,56 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Categories</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'inventory:index' %}">
+      <i class="bi bi-arrow-left"></i> Inventory
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'inventory:category_create' %}" hx-target="#genericModalBody"
+            hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Add category
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="text-muted small">{{ category_count|intcomma }} categor{{ category_count|pluralize:"y,ies" }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Name</th>
+          <th class="text-end">Items</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in category_list %}
+        <tr>
+          <td>{{ category.name }}</td>
+          <td class="text-end">{{ category.item_count|intcomma }}</td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
+                    hx-get="{% url 'inventory:category_update' category.pk %}" hx-target="#genericModalBody"
+                    hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" type="button" title="Delete"
+                    hx-post="{% url 'inventory:category_delete' category.pk %}"
+                    hx-confirm="Delete {{ category.name }}?" hx-swap="none">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" class="text-center text-muted py-4">No categories yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
