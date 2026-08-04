@@ -1,0 +1,96 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Madrassa — Classes</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:index' %}">
+      <i class="bi bi-speedometer2"></i> Overview
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'madrassa:class_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Add class
+    </button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Classes</div>
+        <div class="kpi-value">{{ class_list|length|intcomma }}</div>
+      </div>
+      <i class="bi bi-diagram-3 kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Active</div>
+        <div class="kpi-value">{{ active_classes|intcomma }}</div>
+      </div>
+      <i class="bi bi-check-circle kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Active students</div>
+        <div class="kpi-value">{{ student_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-mortarboard kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Class</th>
+          <th>Level</th>
+          <th>Teacher</th>
+          <th>Schedule</th>
+          <th class="text-end">Enrolled</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for class in class_list %}
+        <tr>
+          <td class="fw-semibold">{{ class.name }}</td>
+          <td>{{ class.level|default:"—" }}</td>
+          <td>{{ class.teacher.full_name|default:"—" }}</td>
+          <td>{{ class.schedule|default:"—" }}</td>
+          <td class="text-end">{{ class.enrolled }}{% if class.capacity %}<span class="text-muted">/{{ class.capacity }}</span>{% endif %}</td>
+          <td>
+            <span class="badge {% if class.is_active %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+              {{ class.is_active|yesno:"Active,Inactive" }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
+                    hx-get="{% url 'madrassa:class_update' class.pk %}" hx-target="#genericModalBody"
+                    hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" hx-post="{% url 'madrassa:class_delete' class.pk %}"
+                    hx-confirm="Delete {{ class.name }}?" hx-swap="none" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No classes yet. Add your first class with the <strong>Add class</strong> button above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

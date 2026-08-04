@@ -1,0 +1,128 @@
+{% load humanize %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Present</div>
+        <div class="kpi-value text-success">{{ present_today|intcomma }}</div>
+      </div>
+      <i class="bi bi-check-circle kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Absent</div>
+        <div class="kpi-value text-danger">{{ absent_today|intcomma }}</div>
+      </div>
+      <i class="bi bi-x-circle kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Late</div>
+        <div class="kpi-value">{{ late_today|intcomma }}</div>
+      </div>
+      <i class="bi bi-clock kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Attendance</div>
+        <div class="kpi-value">{{ attendance_rate|floatformat:1 }}%</div>
+      </div>
+      <i class="bi bi-graph-up kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <a class="btn btn-sm btn-outline-secondary"
+         href="{% url 'madrassa:attendance' %}?class_id={{ selected_class }}&amp;date={{ prev_date }}">
+        <i class="bi bi-chevron-left"></i>
+      </a>
+      <strong class="small">{{ selected_date }}</strong>
+      <a class="btn btn-sm btn-outline-secondary"
+         href="{% url 'madrassa:attendance' %}?class_id={{ selected_class }}&amp;date={{ next_date }}">
+        <i class="bi bi-chevron-right"></i>
+      </a>
+    </div>
+    {% if selected_class %}
+    <button class="btn btn-sm btn-success" type="button"
+            hx-post="{% url 'madrassa:attendance_mark_all' %}"
+            hx-vals='{"class_id": "{{ selected_class }}", "date": "{{ selected_date }}"}'
+            hx-swap="none">
+      <i class="bi bi-check-all"></i> Mark all present
+    </button>
+    {% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Student</th>
+          <th class="text-center">Present</th>
+          <th class="text-center">Late</th>
+          <th class="text-center">Absent</th>
+          <th class="text-center">Excused</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in grid_rows %}
+        {% with status=row.status %}
+        <tr>
+          <td>{{ row.student.full_name }}</td>
+          <td class="text-center">
+            <button class="btn btn-sm {% if status == 'PRESENT' %}btn-success{% else %}btn-outline-success{% endif %}"
+                    type="button" title="Present"
+                    hx-post="{% url 'madrassa:attendance_set' %}"
+                    hx-vals='{"student_id": {{ row.student.id }}, "date": "{{ selected_date }}", "status": "PRESENT", "class_id": "{{ selected_class }}"}'
+                    hx-swap="none">
+              <i class="bi bi-check-lg"></i>
+            </button>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-sm {% if status == 'LATE' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+                    type="button" title="Late"
+                    hx-post="{% url 'madrassa:attendance_set' %}"
+                    hx-vals='{"student_id": {{ row.student.id }}, "date": "{{ selected_date }}", "status": "LATE", "class_id": "{{ selected_class }}"}'
+                    hx-swap="none">
+              <i class="bi bi-clock"></i>
+            </button>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-sm {% if status == 'ABSENT' %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                    type="button" title="Absent"
+                    hx-post="{% url 'madrassa:attendance_set' %}"
+                    hx-vals='{"student_id": {{ row.student.id }}, "date": "{{ selected_date }}", "status": "ABSENT", "class_id": "{{ selected_class }}"}'
+                    hx-swap="none">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-sm {% if status == 'EXCUSED' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+                    type="button" title="Excused"
+                    hx-post="{% url 'madrassa:attendance_set' %}"
+                    hx-vals='{"student_id": {{ row.student.id }}, "date": "{{ selected_date }}", "status": "EXCUSED", "class_id": "{{ selected_class }}"}'
+                    hx-swap="none">
+              <i class="bi bi-slash-circle"></i>
+            </button>
+          </td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            No students to mark. Enroll students in a class first.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

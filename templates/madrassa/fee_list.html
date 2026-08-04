@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Fees — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="fee-list-root"
+     hx-get="{% url 'madrassa:fees' %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "madrassa/partials/fee_list_content.html" %}
+</div>
+{% endblock %}

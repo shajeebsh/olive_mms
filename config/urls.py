@@ -13,4 +13,5 @@ urlpatterns = [
     path("members/", include("members.urls")),
     path("donations/", include("donations.urls")),
     path("finance/", include("finance.urls")),
+    path("madrassa/", include("madrassa.urls")),
 ]

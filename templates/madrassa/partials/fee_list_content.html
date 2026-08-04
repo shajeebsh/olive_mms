@@ -1,0 +1,85 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Madrassa — Fees</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:index' %}">
+      <i class="bi bi-speedometer2"></i> Overview
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'madrassa:fee_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Add fee
+    </button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Fees</div>
+        <div class="kpi-value">{{ fee_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-receipt kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Active</div>
+        <div class="kpi-value text-success">{{ active_fees|intcomma }}</div>
+      </div>
+      <i class="bi bi-check-circle kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Fee</th>
+          <th>Frequency</th>
+          <th>Class</th>
+          <th class="text-end">Amount</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fee in fee_list %}
+        <tr>
+          <td class="fw-semibold">{{ fee.name }}</td>
+          <td>{{ fee.get_frequency_display }}</td>
+          <td>{{ fee.madrassa_class.name|default:"All classes" }}</td>
+          <td class="text-end fw-semibold">{{ fee.amount|intcomma }}</td>
+          <td>
+            <span class="badge {% if fee.is_active %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+              {{ fee.is_active|yesno:"Active,Inactive" }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
+                    hx-get="{% url 'madrassa:fee_update' fee.pk %}" hx-target="#genericModalBody"
+                    hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" hx-post="{% url 'madrassa:fee_delete' fee.pk %}"
+                    hx-confirm="Delete {{ fee.name }}?" hx-swap="none" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            No fees yet. Add your first fee with the <strong>Add fee</strong> button above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

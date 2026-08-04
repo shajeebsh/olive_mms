@@ -1,6 +1,6 @@
 # Olive MMS — Mosque & Madrassa Management System — Implementation Plan
 
-> Status: PHASE 4 NEXT (Phases 0–3 complete)
+> Status: PHASE 5 NEXT (Phases 0–4 complete)
 > Last updated: August 2026
 
 ---
@@ -162,11 +162,12 @@ reporting.Dashboard      -- (optional) saved dashboard/widget defs
 - **Exit criteria**: open fund balances, record expense, dashboard shows balance trend. ✔
 
 ### Phase 4 — Madrassa
-- [ ] `madrassa` app: Class, Teacher, Student, Enrollment, Attendance, Fee, FeePayment
-- [ ] Attendance grid (class × date) with quick check-in (HTMX partial)
-- [ ] Fee billing + payment posting → `finance.Income` (signal)
-- [ ] Student report card / progress notes (optional)
-- **Exit criteria**: enroll student, take daily attendance, collect fee, see income posted.
+- [x] `madrassa` app: Class, Teacher (via `members.Member`), Student, Enrollment, Attendance, Fee, FeePayment
+- [x] Attendance grid (class × date) with quick check-in (HTMX partial)
+- [x] Fee billing + payment posting → `finance.Income` (signal)
+- [x] Student report card / progress notes (student detail with enrollments, attendance + fee history)
+- **Exit criteria**: enroll student, take daily attendance, collect fee, see income posted. ✔
+  (verified via test client: modal create → 204, attendance set/mark-all, fee payment auto-posts income to EDU fund, cascade on delete; 7 unit tests green)
 
 ### Phase 5 — Events & Inventory
 - [ ] `events` app: Event, EventAttendance, volunteers

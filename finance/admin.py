@@ -11,7 +11,7 @@ class FundAdmin(admin.ModelAdmin):
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ["fund", "date", "amount", "source", "donation"]
+    list_display = ["fund", "date", "amount", "source", "donation", "fee_payment"]
     list_filter = ["fund", "date"]
     search_fields = ["source", "description"]
 

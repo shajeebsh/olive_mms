@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ object.full_name }} — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">{{ object.full_name }}</h1>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary btn-sm" type="button"
+            hx-get="{% url 'madrassa:student_update' object.pk %}" hx-target="#genericModalBody"
+            hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-pencil"></i> Edit
+    </button>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:students' %}">Back</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Status</div>
+        <div class="kpi-value small">{{ object.get_status_display }}</div>
+      </div>
+      <i class="bi bi-person-check kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Attendance records</div>
+        <div class="kpi-value">{{ attendance_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-clipboard-check kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Days present</div>
+        <div class="kpi-value text-success">{{ attendance_present|intcomma }}</div>
+      </div>
+      <i class="bi bi-check-circle kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Enrollments</div>
+        <div class="kpi-value">{{ enrollments|length|intcomma }}</div>
+      </div>
+      <i class="bi bi-person-plus kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Details</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted small">Admitted</dt>
+          <dd class="col-sm-8">{{ object.admission_date|date:"d M Y" }}</dd>
+          <dt class="col-sm-4 text-muted small">Date of birth</dt>
+          <dd class="col-sm-8">{{ object.date_of_birth|date:"d M Y"|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted small">Guardian</dt>
+          <dd class="col-sm-8">{{ object.guardian|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted small">Guardian phone</dt>
+          <dd class="col-sm-8">{{ object.guardian_phone|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted small">Family</dt>
+          <dd class="col-sm-8">{{ object.family.name|default:"—" }}</dd>
+          <dt class="col-sm-4 text-muted small">Member</dt>
+          <dd class="col-sm-8">{{ object.member.full_name|default:"—" }}</dd>
+          {% if object.notes %}
+          <dt class="col-sm-4 text-muted small">Notes</dt>
+          <dd class="col-sm-8">{{ object.notes }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Enrollments</span>
+        <button class="btn btn-sm btn-outline-primary" type="button"
+                hx-get="{% url 'madrassa:enrollment_create' %}" hx-target="#genericModalBody"
+                hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+          <i class="bi bi-plus-lg"></i> Enroll
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Class</th>
+              <th>Year</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for enrollment in enrollments %}
+            <tr>
+              <td>{{ enrollment.madrassa_class.name }}</td>
+              <td>{{ enrollment.academic_year|default:"—" }}</td>
+              <td><span class="badge text-bg-light border">{{ enrollment.get_status_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Not enrolled in any class yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span>Fee payments</span>
+    <a class="small" href="{% url 'madrassa:payments' %}">All payments</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Fee</th>
+          <th>Receipt</th>
+          <th>Method</th>
+          <th class="text-end">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in recent_payments %}
+        <tr>
+          <td>{{ payment.date|date:"d M Y" }}</td>
+          <td>{{ payment.fee.name|default:"—" }}</td>
+          <td>{{ payment.receipt_number }}</td>
+          <td>{{ payment.get_method_display }}</td>
+          <td class="text-end fw-semibold text-success">{{ payment.amount|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-3">No fee payments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

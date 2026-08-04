@@ -40,6 +40,13 @@ class Income(TimeStampedModel):
         blank=True,
         related_name="income",
     )
+    fee_payment = models.OneToOneField(
+        "madrassa.FeePayment",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="income",
+    )
     description = models.CharField(max_length=255, blank=True)
 
     class Meta:

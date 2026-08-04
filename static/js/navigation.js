@@ -26,4 +26,12 @@
       modal.hide();
     }
   });
+
+  // Attach the CSRF token to every htmx request (delete buttons, attendance cells).
+  var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  if (csrfMeta) {
+    document.body.addEventListener("htmx:configRequest", function (event) {
+      event.detail.headers["X-CSRFToken"] = csrfMeta.content;
+    });
+  }
 })();
