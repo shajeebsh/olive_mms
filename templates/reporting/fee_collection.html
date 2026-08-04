@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Fee Collection Report — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Madrassa fee collection</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{% url 'reporting:export_fee_collection' %}?year={{ year }}{% if selected_class %}&class={{ selected_class }}{% endif %}">
+      <i class="bi bi-download"></i> Export CSV
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'reporting:index' %}">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+  </div>
+</div>
+
+<form class="card mb-4" method="get">
+  <div class="card-body row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small mb-0 text-muted" for="year">Year</label>
+      <select class="form-select form-select-sm" id="year" name="year" onchange="this.form.submit()">
+        {% for y in years %}
+        <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small mb-0 text-muted" for="cls">Class</label>
+      <select class="form-select form-select-sm" id="cls" name="class" onchange="this.form.submit()">
+        <option value="">All classes</option>
+        {% for cls in classes %}
+        <option value="{{ cls.pk }}" {% if selected_class == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+</form>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Collected {{ year }}</div>
+        <div class="kpi-value text-success">{{ collected_total|intcomma }}</div>
+      </div>
+      <i class="bi bi-cash-coin kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Payments</div>
+        <div class="kpi-value">{{ payment_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-receipt kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Class collection rate</div>
+        <div class="kpi-value">{{ overall_rate|floatformat:1|default:"—" }}%</div>
+      </div>
+      <i class="bi bi-graph-up kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">By class — {{ year }}</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Class</th>
+                <th class="text-end">Students</th>
+                <th class="text-end">Expected</th>
+                <th class="text-end">Collected</th>
+                <th class="text-end">Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in class_summary %}
+              <tr>
+                <td>{{ row.class.name }}{% if row.class.level %} <span class="badge text-bg-light border">{{ row.class.level }}</span>{% endif %}</td>
+                <td class="text-end">{{ row.enrolled|intcomma }}</td>
+                <td class="text-end">{{ row.expected|default:"—" }}</td>
+                <td class="text-end fw-semibold text-success">{{ row.collected|intcomma }}</td>
+                <td class="text-end">
+                  {% if row.rate is not None %}
+                  <span class="badge {% if row.rate >= 70 %}text-bg-success{% elif row.rate >= 40 %}text-bg-warning{% else %}text-bg-danger{% endif %}">
+                    {{ row.rate }}%
+                  </span>
+                  {% else %}—{% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-center text-muted py-3">No classes yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">Top payers — {{ year }}</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Student</th>
+                <th class="text-end">Payments</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in student_totals %}
+              <tr>
+                <td>{{ row.student__full_name }}</td>
+                <td class="text-end">{{ row.count|intcomma }}</td>
+                <td class="text-end fw-semibold text-success">{{ row.total|intcomma }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-3">No fee payments in {{ year }}.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">Monthly collection — {{ year }}</div>
+  <div class="card-body">
+    {% if has_payments %}
+    <canvas id="feeChart" height="220" role="img" aria-label="Monthly fee collection for {{ year }}"></canvas>
+    {% else %}
+    <p class="text-muted text-center py-4 mb-0">No fee payments recorded for {{ year }}.</p>
+    {% endif %}
+  </div>
+</div>
+
+{{ monthly_labels|json_script:"monthlyLabels" }}
+{{ monthly_values|json_script:"monthlyValues" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('feeChart');
+    if (!canvas) return;
+    const labels = JSON.parse(document.getElementById('monthlyLabels').textContent);
+    const values = JSON.parse(document.getElementById('monthlyValues').textContent);
+    new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{ label: 'Collected', data: values, backgroundColor: 'rgba(74, 134, 95, 0.7)', borderRadius: 4 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return v.toLocaleString(); } } } }
+      }
+    });
+  });
+</script>
+{% endblock %}

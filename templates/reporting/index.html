@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Reports — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Reports</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'reporting:annual_zakat' %}">
+      <i class="bi bi-file-earmark-text"></i> Annual / Zakat
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'reporting:fee_collection' %}">
+      <i class="bi bi-mortarboard"></i> Fee collection
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Members</div>
+        <div class="kpi-value">{{ member_count|intcomma }}</div>
+        <div class="kpi-sub">{{ active_members|intcomma }} active</div>
+      </div>
+      <i class="bi bi-people kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Donations this year</div>
+        <div class="kpi-value text-success">{{ year_donations|intcomma }}</div>
+        <div class="kpi-sub">{{ donation_count|intcomma }} donations</div>
+      </div>
+      <i class="bi bi-heart kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Total balance</div>
+        <div class="kpi-value">{{ total_balance|intcomma }}</div>
+        <div class="kpi-sub">{{ fund_count|intcomma }} funds</div>
+      </div>
+      <i class="bi bi-cash-stack kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Students</div>
+        <div class="kpi-value">{{ active_students|intcomma }}</div>
+        <div class="kpi-sub">{{ upcoming_events|intcomma }} upcoming events</div>
+      </div>
+      <i class="bi bi-mortarboard kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Donations by type — {{ current_year }}</div>
+      <div class="card-body">
+        {% if donation_type_labels %}
+        <canvas id="donationTypeChart" height="240" role="img" aria-label="Donation amounts by type"></canvas>
+        {% else %}
+        <p class="text-muted text-center py-4 mb-0">
+          No donations recorded yet. <a href="{% url 'donations:donation_create' %}">Record a donation</a>.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Income vs expenses — last 6 months</div>
+      <div class="card-body">
+        {% if monthly_labels %}
+        <canvas id="reportTrendChart" height="240" role="img" aria-label="Income and expenses over the last 6 months"></canvas>
+        {% else %}
+        <p class="text-muted text-center py-4 mb-0">No income or expenses yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Recent donations</span>
+        <a class="small" href="{% url 'donations:index' %}">All</a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Date</th><th>Type</th><th class="text-end">Amount</th></tr>
+            </thead>
+            <tbody>
+              {% for donation in recent_donations %}
+              <tr>
+                <td>{{ donation.date|date:"d M Y" }}</td>
+                <td>{{ donation.donation_type.name }}</td>
+                <td class="text-end text-success">{{ donation.amount|intcomma }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-3">No donations yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Recent fee payments</span>
+        <a class="small" href="{% url 'madrassa:payments' %}">All</a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Date</th><th>Student</th><th class="text-end">Amount</th></tr>
+            </thead>
+            <tbody>
+              {% for payment in recent_payments %}
+              <tr>
+                <td>{{ payment.date|date:"d M Y" }}</td>
+                <td>{{ payment.student.full_name }}</td>
+                <td class="text-end text-success">{{ payment.amount|intcomma }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-3">No fee payments yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Latest activity</span>
+        <a class="small" href="{% url 'reporting:index' %}">Refresh</a>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled mb-0 small">
+          {% for expense in recent_expenses %}
+          <li class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Expense · {{ expense.date|date:"d M" }}</span>
+            <span class="fw-semibold text-danger">-{{ expense.amount|intcomma }}</span>
+          </li>
+          {% empty %}
+          <li class="text-muted py-2">No expenses yet.</li>
+          {% endfor %}
+          {% for movement in recent_distributions %}
+          <li class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Distribution · {{ movement.date|date:"d M" }}</span>
+            <span class="fw-semibold text-danger">{{ movement.qty_change }} {{ movement.item.unit }}</span>
+          </li>
+          {% empty %}
+          <li class="text-muted py-2">No distributions yet.</li>
+          {% endfor %}
+          {% if low_stock_items %}
+          <li class="py-1">
+            <a class="text-danger fw-semibold" href="{% url 'inventory:index' %}?low=1">
+              <i class="bi bi-exclamation-triangle"></i> {{ low_stock_items }} low-stock item{{ low_stock_items|pluralize }}
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ current_year|json_script:"currentYear" }}
+{{ donation_type_labels|json_script:"donationTypeLabels" }}
+{{ donation_type_values|json_script:"donationTypeValues" }}
+{{ monthly_labels|json_script:"monthlyLabels" }}
+{{ monthly_income|json_script:"monthlyIncome" }}
+{{ monthly_expense|json_script:"monthlyExpense" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const donut = document.getElementById('donationTypeChart');
+    if (donut) {
+      const labels = JSON.parse(document.getElementById('donationTypeLabels').textContent);
+      const values = JSON.parse(document.getElementById('donationTypeValues').textContent);
+      new Chart(donut, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{ data: values, backgroundColor: ['#008080', '#003566', '#4a865f', '#bc5249', '#b8860b', '#64748b'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+      });
+    }
+    const trend = document.getElementById('reportTrendChart');
+    if (trend) {
+      const labels = JSON.parse(document.getElementById('monthlyLabels').textContent);
+      const income = JSON.parse(document.getElementById('monthlyIncome').textContent);
+      const expense = JSON.parse(document.getElementById('monthlyExpense').textContent);
+      new Chart(trend, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Income', data: income, backgroundColor: 'rgba(74, 134, 95, 0.7)', borderRadius: 4 },
+            { label: 'Expenses', data: expense, backgroundColor: 'rgba(188, 82, 73, 0.7)', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { boxWidth: 12 } } },
+          scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return v.toLocaleString(); } } } }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

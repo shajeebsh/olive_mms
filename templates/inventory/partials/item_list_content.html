@@ -1,0 +1,168 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Inventory</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'inventory:categories' %}">
+      <i class="bi bi-tags"></i> Categories
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'inventory:movements' %}">
+      <i class="bi bi-arrow-left-right"></i> Movements
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'inventory:distributions' %}">
+      <i class="bi bi-box-arrow-up"></i> Distributions
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{% url 'reporting:export_items' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value|urlencode }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}">
+      <i class="bi bi-download"></i> Export
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'inventory:item_create' %}" hx-target="#genericModalBody"
+            hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Add item
+    </button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Items</div>
+        <div class="kpi-value">{{ item_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-box-seam kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Low stock</div>
+        <div class="kpi-value {% if low_stock_count %}text-danger{% else %}text-success{% endif %}">{{ low_stock_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-exclamation-triangle kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Stock value</div>
+        <div class="kpi-value small">{{ stock_value }}</div>
+      </div>
+      <i class="bi bi-cash-coin kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Movements this month</div>
+        <div class="kpi-value">{{ month_movements|intcomma }}</div>
+      </div>
+      <i class="bi bi-arrow-left-right kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form class="row g-2 align-items-end" method="get" role="search">
+      <div class="col-md-3">
+        <input class="form-control form-control-sm" type="search" name="q" value="{{ q }}"
+               placeholder="Search name, category, unit...">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">Category</label>
+        <select class="form-select form-select-sm" name="category">
+          <option value="">All categories</option>
+          {% for category in categories %}
+          <option value="{{ category.pk }}" {% if selected_category == category.pk|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" name="low" value="1"
+                 id="low-stock-only" {% if low %}checked{% endif %} onchange="this.form.submit()">
+          <label class="form-check-label small" for="low-stock-only">Low stock only</label>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary btn-sm w-100" type="submit">
+          <i class="bi bi-funnel"></i> Filter
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Item</th>
+          <th>Category</th>
+          <th class="text-end">In stock</th>
+          <th>Unit</th>
+          <th class="text-end">Value</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in item_list %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.category.name|default:"—" }}</td>
+          <td class="text-end">{{ item.quantity }}</td>
+          <td>{{ item.unit|default:"—" }}</td>
+          <td class="text-end">{{ item.stock_value }}</td>
+          <td>
+            {% if item.is_low_stock %}
+            <span class="badge text-bg-danger">Low</span>
+            {% else %}
+            <span class="badge text-bg-success">OK</span>
+            {% endif %}
+          </td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Stock in"
+                    hx-get="{% url 'inventory:movement_create' %}?item={{ item.pk }}"
+                    hx-target="#genericModalBody" hx-swap="innerHTML" data-bs-toggle="modal"
+                    data-bs-target="#genericModal">
+              <i class="bi bi-plus-circle"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
+                    hx-get="{% url 'inventory:item_update' item.pk %}" hx-target="#genericModalBody"
+                    hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" type="button" title="Delete"
+                    hx-post="{% url 'inventory:item_delete' item.pk %}" hx-confirm="Delete {{ item.name }}?"
+                    hx-swap="none">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No items found. Add one with the <strong>Add item</strong> button above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>

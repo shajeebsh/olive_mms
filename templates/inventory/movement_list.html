@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Stock movements — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="movement-list-root"
+     hx-get="{% url 'inventory:movements' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "inventory/partials/movement_list_content.html" %}
+</div>
+{% endblock %}

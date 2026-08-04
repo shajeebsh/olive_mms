@@ -1,0 +1,118 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Distributions</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'inventory:index' %}">
+      <i class="bi bi-arrow-left"></i> Inventory
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'inventory:distribution_create' %}" hx-target="#genericModalBody"
+            hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Distribute stock
+    </button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Qty distributed</div>
+        <div class="kpi-value">{{ distribution_total }}</div>
+      </div>
+      <i class="bi bi-box-arrow-up kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Distributions</div>
+        <div class="kpi-value">{{ distribution_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-gift kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Recipients</div>
+        <div class="kpi-value">{{ recipient_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-people kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form class="row g-2 align-items-end" method="get">
+      <div class="col-md-4">
+        <input class="form-control form-control-sm" type="search" name="q" value="{{ q }}"
+               placeholder="Search recipient, item, purpose...">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">From</label>
+        <input class="form-control form-control-sm" type="date" name="date_from" value="{{ date_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">To</label>
+        <input class="form-control form-control-sm" type="date" name="date_to" value="{{ date_to }}">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary btn-sm w-100" type="submit">
+          <i class="bi bi-funnel"></i> Filter
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Item</th>
+          <th class="text-end">Qty</th>
+          <th>Recipient</th>
+          <th>Event</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for movement in distribution_list %}
+        <tr>
+          <td>{{ movement.date|date:"d M Y" }}</td>
+          <td>{{ movement.item.name }}</td>
+          <td class="text-end fw-semibold text-danger">{{ movement.qty_change }} {{ movement.item.unit }}</td>
+          <td>{{ movement.recipient_display }}</td>
+          <td>
+            {% if movement.event %}
+            <a href="{% url 'events:event_detail' movement.event.pk %}">{{ movement.event.name }}</a>
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ movement.purpose|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">No distributions yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Categories — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="category-list-root"
+     hx-get="{% url 'inventory:categories' %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "inventory/partials/category_list_content.html" %}
+</div>
+{% endblock %}
