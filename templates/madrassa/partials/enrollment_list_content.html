@@ -1,0 +1,134 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Madrassa — Enrollments</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:index' %}">
+      <i class="bi bi-speedometer2"></i> Overview
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'madrassa:enrollment_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Enroll student
+    </button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Total enrollments</div>
+        <div class="kpi-value">{{ total_enrollments|intcomma }}</div>
+      </div>
+      <i class="bi bi-person-plus kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Active</div>
+        <div class="kpi-value text-success">{{ active_enrollments|intcomma }}</div>
+      </div>
+      <i class="bi bi-check-circle kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Classes</div>
+        <div class="kpi-value">{{ classes|length|intcomma }}</div>
+      </div>
+      <i class="bi bi-diagram-3 kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form class="row g-2 align-items-end" method="get" role="search">
+      <div class="col-md-3">
+        <label class="form-label small mb-0 text-muted">Class</label>
+        <select class="form-select form-select-sm" name="class_id">
+          <option value="">All classes</option>
+          {% for class in classes %}
+          <option value="{{ class.pk }}" {% if selected_class == class.pk|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small mb-0 text-muted">Status</label>
+        <select class="form-select form-select-sm" name="status">
+          <option value="">All statuses</option>
+          {% for value, label in view.model.Status.choices %}
+          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary btn-sm w-100" type="submit">
+          <i class="bi bi-funnel"></i> Filter
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Student</th>
+          <th>Class</th>
+          <th>Year</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for enrollment in enrollment_list %}
+        <tr>
+          <td><a href="{% url 'madrassa:student_detail' enrollment.student_id %}">{{ enrollment.student.full_name }}</a></td>
+          <td>{{ enrollment.madrassa_class.name }}</td>
+          <td>{{ enrollment.academic_year|default:"—" }}</td>
+          <td>
+            <span class="badge {% if enrollment.status == 'ENROLLED' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+              {{ enrollment.get_status_display }}
+            </span>
+          </td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-sm btn-outline-secondary" type="button" title="Edit"
+                    hx-get="{% url 'madrassa:enrollment_update' enrollment.pk %}" hx-target="#genericModalBody"
+                    hx-swap="innerHTML" data-bs-toggle="modal" data-bs-target="#genericModal">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" hx-post="{% url 'madrassa:enrollment_delete' enrollment.pk %}"
+                    hx-confirm="Delete this enrollment?" hx-swap="none" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">
+            No enrollments found. Enroll a student with the <strong>Enroll student</strong> button above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>

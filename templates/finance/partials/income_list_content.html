@@ -71,6 +71,8 @@
           <td>
             {% if income.donation %}
             <a href="{% url 'donations:donation_detail' income.donation.pk %}">{{ income.donation.receipt_number }}</a>
+            {% elif income.fee_payment %}
+            <a href="{% url 'madrassa:student_detail' income.fee_payment.student_id %}">{{ income.fee_payment.receipt_number }} (fee)</a>
             {% else %}
             {{ income.source|default:"—" }}
             {% endif %}

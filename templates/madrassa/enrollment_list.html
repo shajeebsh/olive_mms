@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Enrollments — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="enrollment-list-root"
+     hx-get="{% url 'madrassa:enrollments' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "madrassa/partials/enrollment_list_content.html" %}
+</div>
+{% endblock %}

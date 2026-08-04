@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Madrassa — Olive MMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Madrassa</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:attendance' %}">
+      <i class="bi bi-clipboard-check"></i> Attendance
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:enrollments' %}">
+      <i class="bi bi-person-plus"></i> Enrollments
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:payments' %}">
+      <i class="bi bi-cash-coin"></i> Fee payments
+    </a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:students' %}">
+      <i class="bi bi-mortarboard"></i> Students
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Students</div>
+        <div class="kpi-value">{{ student_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-mortarboard kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Active students</div>
+        <div class="kpi-value">{{ active_students|intcomma }}</div>
+      </div>
+      <i class="bi bi-person-check kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Classes</div>
+        <div class="kpi-value">{{ class_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-diagram-3 kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Fees this month</div>
+        <div class="kpi-value text-success">{{ month_fees|intcomma }}</div>
+      </div>
+      <i class="bi bi-cash-coin kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Classes</span>
+        <a class="small" href="{% url 'madrassa:classes' %}">Manage</a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Class</th>
+                <th>Teacher</th>
+                <th class="text-end">Enrolled</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for class in classes %}
+              <tr>
+                <td>{{ class.name }}
+                  {% if class.level %}<span class="badge text-bg-light border">{{ class.level }}</span>{% endif %}
+                </td>
+                <td>{{ class.teacher.full_name|default:"—" }}</td>
+                <td class="text-end fw-semibold">
+                  {{ class.enrolled }}{% if class.capacity %}<span class="text-muted">/{{ class.capacity }}</span>{% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted py-3">
+                  No classes yet. <a href="{% url 'madrassa:class_create' %}">Add a class</a>.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span>Recent fee payments</span>
+        <a class="small" href="{% url 'madrassa:payments' %}">All payments</a>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Student</th>
+                <th>Fee</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for payment in recent_payments %}
+              <tr>
+                <td>{{ payment.date|date:"d M Y" }}</td>
+                <td><a href="{% url 'madrassa:student_detail' payment.student_id %}">{{ payment.student.full_name }}</a></td>
+                <td>{{ payment.fee.name|default:"—" }}</td>
+                <td class="text-end fw-semibold text-success">{{ payment.amount|intcomma }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">
+                  No fee payments yet.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

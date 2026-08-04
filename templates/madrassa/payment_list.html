@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Fee payments — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="payment-list-root"
+     hx-get="{% url 'madrassa:payments' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "madrassa/partials/payment_list_content.html" %}
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 # docs/ai_context.md — Olive MMS (Mosque & Madrassa Management System)
 
-> **Status**: GREEN — Phases 0–3 complete; Phase 4 (Madrassa) next.
+> **Status**: GREEN — Phases 0–4 complete; Phase 5 (Events & Inventory) next.
 > **Last updated**: August 2026
 > **Source of truth for plan**: `docs/plan.md`
 
@@ -150,11 +150,33 @@ business pages, fund-based accounting only (initially).
   - Funds page moved from index to `finance:funds`; nav auto-resolves `finance:index` → dashboard.
   - Exit criteria met via test client: dashboard renders with chart, record expense → pending →
     approve, manual income, transfer moves balances, same-fund blocked.
+- **Phase 4 — Madrassa (complete)**:
+  - `madrassa` app: `Class` (teacher FK → `members.Member`), `Student` (member/family FKs,
+    guardian, admission_date, status), `Enrollment` (unique per student/class/academic_year),
+    `Attendance` (PRESENT/ABSENT/LATE/EXCUSED, unique per student/day), `Fee`, `FeePayment`
+    (auto `PAY-YYYYMMDD-NNNN` receipt; amount defaults to selected fee in `save()`).
+  - `finance.Income.fee_payment` OneToOne (`on_delete=CASCADE`); `post_fee_payment_to_fund`
+    signal (`madrassa/apps.py` `ready()`) posts income, falling back to EDU fund; income list
+    links fee payments back to the student.
+  - Attendance grid (class × date) in `madrassa/attendance.html` + `partials/attendance_grid.html`:
+    per-cell status buttons POST `attendance_set` (204 + `attendanceChanged`), grid root
+    auto-refreshes KPIs + grid; prev/next date nav; "Mark all present" (`attendance_mark_all`).
+  - Madrassa dashboard (student/class/active-enrollment/fee KPIs, class table w/ enrolled counts,
+    recent payments); Class/Student/Enrollment/Fee/FeePayment lists with filters + modal CRUD;
+    Student detail report card (details, enrollments, attendance + fee history).
+  - Registered app + URLs; migrations `madrassa/0001`, `finance/0003`; `madrassa/tests.py`
+    (signal posting + EDU fallback, amount default, receipt generation, unique constraints,
+    delete cascade) — 7 tests green.
+  - Fixes while there: added Chart.js CDN to `base.html` (finance dashboard chart had no library
+    loaded); added CSRF meta tag + htmx `configRequest` header wiring in `navigation.js` so
+    `hx-post` delete/attendance buttons work in a browser.
+  - Exit criteria met via test client: enroll student → take attendance (set + mark-all) → record
+    fee → income auto-posted on EDU fund; edge cases (blank capacity, amount default) fixed.
 
 ### 🔄 In Progress
-- **This session (Prompt 4 — rounding fix + Phase 3 Finance)**: done — see above.
+- **This session (Prompt 5 — Phase 4 Madrassa)**: done — see below.
 
-### ⏭️ Next (Phase 4 — Madrassa)
+### ⏭️ Next (Phase 5 — Events & Inventory)
 
 ---
 

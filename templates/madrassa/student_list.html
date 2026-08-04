@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Students — Olive MMS{% endblock %}
+
+{% block content %}
+<div id="student-list-root"
+     hx-get="{% url 'madrassa:students' %}{% if request.GET %}?{% for key, value in request.GET.items %}{{ key }}={{ value }}{% if not forloop.last %}&{% endif %}{% endfor %}{% endif %}"
+     hx-trigger="listChanged from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  {% include "madrassa/partials/student_list_content.html" %}
+</div>
+{% endblock %}

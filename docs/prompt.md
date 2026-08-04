@@ -116,6 +116,43 @@ transfer moves balances, same-fund blocked); test data cleaned up.*
 
 ---
 
+## Current Prompt (August 2026)
+
+**Task:** Continue to the next phase — Phase 4 (Madrassa) implementation.
+
+**Steps:**
+
+1. **Update `docs/ai_context.md`** at start and end of the session (completed / in progress /
+   next).
+2. **Phase 4 — Madrassa** per `docs/plan.md`:
+   - `madrassa` app: `Class` (teacher FK → `members.Member`), `Student` (member/family FKs,
+     guardian, admission), `Enrollment` (unique per student/class/year), `Attendance` (unique per
+     student/day, PRESENT/ABSENT/LATE/EXCUSED), `Fee`, `FeePayment` (auto `PAY-…` receipt number;
+     amount defaults to selected fee in `save()`). Same conventions as prior apps (TimeStampedModel,
+     BootstrapFormMixin, modal CRUD, partial lists).
+   - Add `finance.Income.fee_payment` OneToOne (`on_delete=CASCADE`); `post_fee_payment_to_fund`
+     signal (`madrassa/apps.py` `ready()`) posts income, falling back to the EDU fund.
+   - Attendance grid (class × date): `attendance.html` + `partials/attendance_grid.html`;
+     per-cell status buttons POST to `attendance_set` (204 + `attendanceChanged`), grid root
+     auto-refreshes; "Mark all present" posts to `attendance_mark_all`.
+   - Views: Madrassa dashboard (KPIs + class table + recent payments), Class/Student/Enrollment/
+     Fee/FeePayment lists with filters + modal CRUD, Student detail (report-card style).
+   - Register app in `INSTALLED_APPS` + URLs; run migrations; `madrassa/tests.py` (signal, amount
+     default, unique constraints, cascade).
+   - Fixes while there: Chart.js CDN was missing from `base.html` (finance dashboard chart);
+     add CSRF meta + htmx `configRequest` header wiring in `navigation.js` so `hx-post` buttons
+     work in a real browser.
+3. **Docs** — tick Phase 4 in `docs/plan.md`, log this prompt, keep `docs/ai_context.md` current.
+
+**Exit criteria:** enroll student, take daily attendance (grid + quick check-in + mark-all),
+collect fee and see income auto-posted on the EDU fund; `manage.py check` + `manage.py test`
+green; Phase 4 checklist ticked. — *Complete: Phase 4 done and verified via test client (modal
+create 204 + triggers, attendance set/mark-all with `attendanceChanged`, fee→Income posting +
+EDU fallback, cascade on delete, student detail); capacity-blank and amount-default edge cases
+fixed; 7 unit tests green.*
+
+---
+
 ## History
 
 ### Prompt 1 (August 2026) — Kickoff + Phase 0

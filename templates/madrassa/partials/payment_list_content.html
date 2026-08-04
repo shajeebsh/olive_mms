@@ -1,0 +1,134 @@
+{% load humanize %}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h1 class="h3 mb-0">Madrassa — Fee payments</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'madrassa:index' %}">
+      <i class="bi bi-speedometer2"></i> Overview
+    </a>
+    <button class="btn btn-primary btn-sm" type="button"
+            hx-get="{% url 'madrassa:payment_create' %}" hx-target="#genericModalBody" hx-swap="innerHTML"
+            data-bs-toggle="modal" data-bs-target="#genericModal">
+      <i class="bi bi-plus-lg"></i> Record payment
+    </button>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Total collected</div>
+        <div class="kpi-value">{{ total_collected|intcomma }}</div>
+      </div>
+      <i class="bi bi-cash-stack kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">This month</div>
+        <div class="kpi-value text-success">{{ month_collected|intcomma }}</div>
+      </div>
+      <i class="bi bi-calendar-month kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Filtered total</div>
+        <div class="kpi-value">{{ filtered_total|intcomma }}</div>
+      </div>
+      <i class="bi bi-funnel kpi-icon"></i>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kpi-label">Payments</div>
+        <div class="kpi-value">{{ payment_count|intcomma }}</div>
+      </div>
+      <i class="bi bi-receipt kpi-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form class="row g-2 align-items-end" method="get" role="search">
+      <div class="col-md-3">
+        <input class="form-control form-control-sm" type="search" name="q" value="{{ q }}"
+               placeholder="Search student, receipt, fee...">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">Method</label>
+        <select class="form-select form-select-sm" name="method">
+          <option value="">All methods</option>
+          {% for value, label in view.model.Method.choices %}
+          <option value="{{ value }}" {% if selected_method == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">From</label>
+        <input type="date" class="form-control form-control-sm" name="date_from" value="{{ date_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-0 text-muted">To</label>
+        <input type="date" class="form-control form-control-sm" name="date_to" value="{{ date_to }}">
+      </div>
+      <div class="col-md-1">
+        <button class="btn btn-outline-secondary btn-sm w-100" type="submit">
+          <i class="bi bi-funnel"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Receipt</th>
+          <th>Date</th>
+          <th>Student</th>
+          <th>Fee</th>
+          <th>Method</th>
+          <th class="text-end">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in feepayment_list %}
+        <tr>
+          <td>{{ payment.receipt_number }}</td>
+          <td>{{ payment.date|date:"d M Y" }}</td>
+          <td><a href="{% url 'madrassa:student_detail' payment.student_id %}">{{ payment.student.full_name }}</a></td>
+          <td>{{ payment.fee.name|default:"—" }}</td>
+          <td>{{ payment.get_method_display }}</td>
+          <td class="text-end fw-semibold text-success">{{ payment.amount|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            No fee payments match. Record one with the <strong>Record payment</strong> button above.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
